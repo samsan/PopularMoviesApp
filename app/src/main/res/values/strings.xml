@@ -1,0 +1,9 @@
+<resources>
+    <string name="app_name">Popular Movies</string>
+    <string name="poster_cd">A movie poster</string>
+    <string name="no_data">No data available. Try later :}</string>
+    <string-array name="sort_types_array">
+        <item>Most popular</item>
+        <item>Highest rated</item>
+    </string-array>
+</resources>
