@@ -6,6 +6,7 @@
     <string name="release_date">Release date:</string>
     <string name="vote_average">Vote average:</string>
     <string name="refresh">refresh</string>
+    <string name="no_img_error">No image available, please try later :)</string>
     <string-array name="sort_types_array">
         <item>Most popular</item>
         <item>Highest rated</item>

@@ -10,6 +10,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.example.android.popularmovies.utilities.TheMovieDbJsonUtils;
+import com.squareup.picasso.Callback;
 import com.squareup.picasso.Picasso;
 
 import org.json.JSONException;
@@ -19,6 +20,7 @@ public class MovieDetail extends AppCompatActivity {
 
     private static final String LOG_TAG = MovieDetail.class.getSimpleName();
     TextView errorMessage;
+    TextView img_error_message;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -41,6 +43,7 @@ public class MovieDetail extends AppCompatActivity {
             moviePlot = (TextView) findViewById(R.id.movie_plot);
 
             errorMessage = (TextView) findViewById(R.id.error_message);
+            img_error_message = (TextView) findViewById(R.id.img_error_message);
 
             String movieData = intent.getStringExtra(Intent.EXTRA_TEXT);
 
@@ -50,7 +53,20 @@ public class MovieDetail extends AppCompatActivity {
                 movieAvgVote.append(" " + TheMovieDbJsonUtils.getStringFromJsonField(movieData, TheMovieDbJsonUtils.VOTE_AVERAGE));
                 moviePlot.setText(TheMovieDbJsonUtils.getStringFromJsonField(movieData, TheMovieDbJsonUtils.PLOT));
                 boolean hdImg = true;
-                Picasso.with(this).load(TheMovieDbJsonUtils.getMoviePosterPath(movieData, hdImg)).into(moviePoster);
+                Picasso.with(this)
+                        .load(TheMovieDbJsonUtils.getMoviePosterPath(movieData, hdImg))
+                        .into(moviePoster, new Callback() {
+                            @Override
+                            public void onSuccess() {
+                                img_error_message.setVisibility(View.GONE);
+                            }
+
+                            @Override
+                            public void onError() {
+                                Log.e(LOG_TAG, "No image available :(");
+                                img_error_message.setVisibility(View.VISIBLE);
+                            }
+                        });
             } catch (JSONException e) {
                 e.printStackTrace();
                 Log.e(LOG_TAG, e.toString());
