@@ -46,7 +46,8 @@ MovieListAdapter extends RecyclerView.Adapter<MovieListAdapter.MovieListAdapterV
         holder.movieData = moviesData[position];
         if (holder.movieData != null) {
             try {
-                holder.moviePosterUrl = TheMovieDbJsonUtils.getMoviePosterPath(holder.movieData);
+                boolean hdImg = false;
+                holder.moviePosterUrl = TheMovieDbJsonUtils.getMoviePosterPath(holder.movieData, hdImg);
             } catch (JSONException e) {
                 e.printStackTrace();
             }

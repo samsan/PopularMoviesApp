@@ -12,10 +12,10 @@ import org.json.JSONObject;
  */
 
 public class TheMovieDbJsonUtils {
-    private final String OVERVIEW = "overview";
-    private final String RELEASE_DATE = "release_date";
-    private final String TITLE = "title";
-    private final String VOTE_AVERAGE = "vote_average";
+    public static final String PLOT = "overview";
+    public static final String RELEASE_DATE = "release_date";
+    public static final String TITLE = "title";
+    public static final String VOTE_AVERAGE = "vote_average";
 
     public static String[] getSimpleMoviesData(Context context, String rawData) throws JSONException {
         final String LOG_TAG = TheMovieDbJsonUtils.class.getSimpleName();
@@ -55,12 +55,19 @@ public class TheMovieDbJsonUtils {
         return parsedWeatherData;
     }
 
-    public static String getMoviePosterPath(String movieData) throws JSONException {
+    public static String getMoviePosterPath(String movieData, boolean hd) throws JSONException {
         final String POSTER_PATH = "poster_path";
         JSONObject movieJSONObject = new JSONObject(movieData);
         String moviePosterUrl = NetworkUtils.BuildPosterUrl(
-                movieJSONObject.getString(POSTER_PATH)).toString();
+                movieJSONObject.getString(POSTER_PATH), hd).toString();
         return moviePosterUrl;
     }
 
+    public static String getStringFromJsonField(String movieData, String field) throws JSONException {
+        JSONObject movieJSONObject = new JSONObject(movieData);
+        if (movieJSONObject.has(field)) {
+            return movieJSONObject.getString(field);
+        }
+        return null;
+    }
 }

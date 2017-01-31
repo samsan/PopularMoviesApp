@@ -15,7 +15,6 @@ import java.util.Scanner;
 
 public class NetworkUtils {
 
-    private URL url;
     private static final String API_KEY = "***";
 
     public static final String THE_MOVIE_DB_POPULAR_MOVIES_URL = "http://api.themoviedb.org/3/movie/popular";
@@ -44,8 +43,13 @@ public class NetworkUtils {
         return url;
     }
 
-    public static URL BuildPosterUrl(String posterPath){
-        Uri buildUri = Uri.parse(POSTER_URL_RECOMMENDED_SIZE).buildUpon()
+    public static URL BuildPosterUrl(String posterPath, boolean hd){
+        String posterUrl = POSTER_URL_RECOMMENDED_SIZE;
+        if (hd) {
+            posterUrl = POSTER_URL_SIZE_BIG;
+        }
+
+        Uri buildUri = Uri.parse(posterUrl).buildUpon()
                 .appendPath(posterPath.replace("/", ""))
                 .build();
 
