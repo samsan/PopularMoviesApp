@@ -7,6 +7,9 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.ScrollingTabContainerView;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
@@ -86,18 +89,37 @@ public class MainActivity extends AppCompatActivity implements MovieListAdapter.
         loadMovieData(NetworkUtils.THE_MOVIE_DB_POPULAR_MOVIES_URL);
     }
 
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        MenuInflater menuInflater = new MenuInflater(this);
+        menuInflater.inflate(R.menu.popularmovies, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        int itemId = item.getItemId();
+
+        if (itemId == R.id.action_refresh) {
+            loadMovieData(NetworkUtils.THE_MOVIE_DB_POPULAR_MOVIES_URL);
+        }
+
+        return super.onOptionsItemSelected(item);
+    }
+
     private void loadMovieData(String sortingUrl){
-        showMoviesData();
         new FetchMoviesTask().execute(sortingUrl);
     }
 
     private void showMoviesData(){
         recycleMovieList.setVisibility(View.VISIBLE);
-        errorMessage.setVisibility(View.INVISIBLE);
+        sortSpinner.setVisibility(View.VISIBLE);
+        errorMessage.setVisibility(View.GONE);
     }
 
     private void showErrorMessage(){
         recycleMovieList.setVisibility(View.INVISIBLE);
+        sortSpinner.setVisibility(View.INVISIBLE);
         errorMessage.setVisibility(View.VISIBLE);
     }
 
@@ -125,7 +147,7 @@ public class MainActivity extends AppCompatActivity implements MovieListAdapter.
 
         @Override
         protected void onPostExecute(String[] movies) {
-            progressBar.setVisibility(View.INVISIBLE);
+            progressBar.setVisibility(View.GONE);
             if (movies != null){
                 showMoviesData();
                 movieListAdapter.setMoviesData(movies);
