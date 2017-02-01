@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">Popular Movies</string>
+    <string name="app_name" translatable="false">Popular Movies</string>
     <string name="poster_cd">A movie poster</string>
     <string name="no_data">No data available. Try later :)</string>
     <string name="movie_poster">movie poster</string>

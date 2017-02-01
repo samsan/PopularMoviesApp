@@ -1,5 +1,6 @@
 package com.example.android.popularmovies;
 
+import android.content.Context;
 import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -7,6 +8,8 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.ScrollingTabContainerView;
+import android.util.DisplayMetrics;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -77,9 +80,9 @@ public class MainActivity extends AppCompatActivity implements MovieListAdapter.
 
             }
         });
-
         recycleMovieList = (RecyclerView) findViewById(R.id.recycle_movie_list);
-        GridLayoutManager gridLayoutManager = new GridLayoutManager(this, 3);
+        GridLayoutManager gridLayoutManager = new GridLayoutManager(this, calculateNoOfColumns(getBaseContext()));
+
         gridLayoutManager.setOrientation(GridLayoutManager.VERTICAL);
         recycleMovieList.setLayoutManager(gridLayoutManager);
         recycleMovieList.setHasFixedSize(true);
@@ -89,9 +92,16 @@ public class MainActivity extends AppCompatActivity implements MovieListAdapter.
         loadMovieData(NetworkUtils.THE_MOVIE_DB_POPULAR_MOVIES_URL);
     }
 
+    public static int calculateNoOfColumns(Context context){
+        DisplayMetrics displayMetrics = context.getResources().getDisplayMetrics();
+        float dpWidth = displayMetrics.widthPixels / displayMetrics.density;
+        int noOfColumns = (int) (dpWidth / 160);
+        return noOfColumns;
+    }
+
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        MenuInflater menuInflater = new MenuInflater(this);
+        MenuInflater menuInflater = new MenuInflater(MainActivity.this);
         menuInflater.inflate(R.menu.popularmovies, menu);
         return true;
     }
@@ -108,7 +118,12 @@ public class MainActivity extends AppCompatActivity implements MovieListAdapter.
     }
 
     private void loadMovieData(String sortingUrl){
-        new FetchMoviesTask().execute(sortingUrl);
+        if (NetworkUtils.hazInternet(this)) {
+            new FetchMoviesTask().execute(sortingUrl);
+        } else {
+            Log.i(LOG_TAG, "no connection!");
+            showErrorMessage();
+        }
     }
 
     private void showMoviesData(){
