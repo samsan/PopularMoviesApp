@@ -12,6 +12,7 @@ import org.json.JSONObject;
  */
 
 public class TheMovieDbJsonUtils {
+    public static final String MOVIE_ID = "id";
     public static final String PLOT = "overview";
     public static final String RELEASE_DATE = "release_date";
     public static final String TITLE = "title";
@@ -23,7 +24,7 @@ public class TheMovieDbJsonUtils {
 
         // in case of error json has this param
         final String STATUS_CODE = "status_code";
-        String[] parsedWeatherData;
+        String[] parsedMoviesData;
 
         JSONObject jsonObject = new JSONObject(rawData);
 
@@ -46,13 +47,13 @@ public class TheMovieDbJsonUtils {
         }
 
         JSONArray moviesJSONArray = jsonObject.getJSONArray(RESULTS);
-        parsedWeatherData = new String[moviesJSONArray.length()];
+        parsedMoviesData = new String[moviesJSONArray.length()];
 
         for (int i=0; i<moviesJSONArray.length(); i++){
             JSONObject movieJSONObject = moviesJSONArray.getJSONObject(i);
-            parsedWeatherData[i] = movieJSONObject.toString();
+            parsedMoviesData[i] = movieJSONObject.toString();
         }
-        return parsedWeatherData;
+        return parsedMoviesData;
     }
 
     public static String getMoviePosterPath(String movieData, boolean hd) throws JSONException {

@@ -19,10 +19,14 @@ import java.util.Scanner;
 
 public class NetworkUtils {
 
-    private static final String API_KEY = "***";
+    private static final String API_KEY = "a73856e34fa83f9eb425a3df54d39608";
 
-    public static final String THE_MOVIE_DB_POPULAR_MOVIES_URL = "http://api.themoviedb.org/3/movie/popular";
-    public static final String THE_MOVIE_DB_TOP_RATED_MOVIES_URL = "http://api.themoviedb.org/3/movie/top_rated";
+    public static final String THE_MOVIE_DB_BASE_URL = "http://api.themoviedb.org/3/movie";
+
+    public static final String THE_MOVIE_DB_POPULAR_MOVIES_URL = THE_MOVIE_DB_BASE_URL + "/popular";
+    public static final String THE_MOVIE_DB_TOP_RATED_MOVIES_URL = THE_MOVIE_DB_BASE_URL + "/top_rated";
+    public static final String THE_MOVIE_DB_MOVIE_TRAILERS_PATH = "/videos";
+    public static final String THE_MOVIE_DB_MOVIE_REVIEWS_PATH = "/reviews";
 
     private static final String THE_MOVIE_DB_POSTER_BASE_URL = "https://image.tmdb.org/t/p";
     private static final String POSTER_URL_RECOMMENDED_SIZE = THE_MOVIE_DB_POSTER_BASE_URL + "/w185";
@@ -33,8 +37,8 @@ public class NetworkUtils {
     public NetworkUtils(){
     }
 
-    private static URL BuildUrl(String sortingUrl){
-        Uri buildUri = Uri.parse(sortingUrl).buildUpon()
+    private static URL BuildUrl(String queryURL){
+        Uri buildUri = Uri.parse(queryURL).buildUpon()
                 .appendQueryParameter(APY_KEY_PARAM, API_KEY)
                 .build();
 
@@ -66,8 +70,8 @@ public class NetworkUtils {
         return url;
     }
 
-    public String getResponseFromHttpUrl(String sortingUrl) throws IOException {
-        URL url = BuildUrl(sortingUrl);
+    public static String getResponseFromHttpUrl(String queryURL) throws IOException {
+        URL url = BuildUrl(queryURL);
         HttpURLConnection httpURLConnection = (HttpURLConnection) url.openConnection();
         InputStream inputStream = httpURLConnection.getInputStream();
         Scanner scanner = new Scanner(inputStream);
