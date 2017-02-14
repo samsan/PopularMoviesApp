@@ -7,6 +7,12 @@
     <string name="vote_average">Vote average:</string>
     <string name="refresh">refresh</string>
     <string name="no_img_error">No image available, please try later :)</string>
+    <string name="generic_title">title</string>
+    <string name="generic_plot">plot</string>
+    <string name="read_user_reviews">read user reviews</string>
+    <string name="check_internet">No data, please heck your internet connection</string>
+    <string name="no_internet_message">No data, please check your internet connection</string>
+    <string name="no_movie_reviews">No review available for this movie</string>
     <string-array name="sort_types_array">
         <item>Most popular</item>
         <item>Highest rated</item>

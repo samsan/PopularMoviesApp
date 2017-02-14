@@ -96,4 +96,12 @@ public class NetworkUtils {
         return networkInfo != null && networkInfo.isConnectedOrConnecting();
     }
 
+    public static String getTrailersURL(String movieId){
+        return THE_MOVIE_DB_BASE_URL + "/" + movieId + THE_MOVIE_DB_MOVIE_TRAILERS_PATH;
+    }
+
+    public static String getReviewsURL(String movieId){
+        return THE_MOVIE_DB_BASE_URL + "/" + movieId + THE_MOVIE_DB_MOVIE_REVIEWS_PATH;
+    }
+
 }

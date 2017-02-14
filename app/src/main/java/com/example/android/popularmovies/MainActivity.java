@@ -150,7 +150,7 @@ public class  MainActivity extends AppCompatActivity implements MovieListAdapter
             String sortingUrl = params[0];
             try {
                 String res = new NetworkUtils().getResponseFromHttpUrl(sortingUrl);
-                moviesData = TheMovieDbJsonUtils.getSimpleMoviesData(MainActivity.this, res);
+                moviesData = TheMovieDbJsonUtils.getMoviesSimpleData(MainActivity.this, res);
             } catch (JSONException e) {
                 e.printStackTrace();
             } catch (IOException e) {

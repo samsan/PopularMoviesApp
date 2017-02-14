@@ -17,8 +17,11 @@ public class TheMovieDbJsonUtils {
     public static final String RELEASE_DATE = "release_date";
     public static final String TITLE = "title";
     public static final String VOTE_AVERAGE = "vote_average";
+    public static final String REVIEW_AUTHOR = "author";
+    public static final String REVIEW_CONTENT = "content";
 
-    public static String[] getSimpleMoviesData(Context context, String rawData) throws JSONException {
+
+    public static String[] getMoviesSimpleData(Context context, String rawData) throws JSONException {
         final String LOG_TAG = TheMovieDbJsonUtils.class.getSimpleName();
         final String RESULTS = "results";
 

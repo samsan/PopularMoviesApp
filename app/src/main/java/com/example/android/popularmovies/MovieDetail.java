@@ -3,12 +3,17 @@ package com.example.android.popularmovies;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
+import android.support.v4.app.LoaderManager;
+import android.support.v4.content.AsyncTaskLoader;
+import android.support.v4.content.Loader;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
+import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.example.android.popularmovies.utilities.NetworkUtils;
 import com.example.android.popularmovies.utilities.TheMovieDbJsonUtils;
 import com.google.android.gms.appindexing.Action;
 import com.google.android.gms.appindexing.AppIndex;
@@ -19,11 +24,17 @@ import com.squareup.picasso.Picasso;
 
 import org.json.JSONException;
 
-public class MovieDetail extends AppCompatActivity {
+import java.io.IOException;
+
+public class MovieDetail extends AppCompatActivity implements LoaderManager.LoaderCallbacks<String[]>{
 
     private static final String LOG_TAG = MovieDetail.class.getSimpleName();
     private TextView errorMessage;
-    private TextView img_error_message;
+    private TextView imgErrorMessage;
+    private Button showReviewsButton;
+    private static String movieReviews;
+    private static final String MOVIE_ID = "movie_id";
+    private static final int TRAILERS_REVIEWS_LOADER = 42;
 
     /**
      * ATTENTION: This was auto-generated to implement the App Indexing API.
@@ -51,17 +62,27 @@ public class MovieDetail extends AppCompatActivity {
             moviePoster = (ImageView) findViewById(R.id.movie_poster);
             movieAvgVote = (TextView) findViewById(R.id.movie_vote_avg);
             moviePlot = (TextView) findViewById(R.id.movie_plot);
-
+            showReviewsButton = (Button) findViewById(R.id.b_show_reviews);
             errorMessage = (TextView) findViewById(R.id.error_message);
-            img_error_message = (TextView) findViewById(R.id.img_error_message);
+            imgErrorMessage = (TextView) findViewById(R.id.img_error_message);
 
             String movieData = intent.getStringExtra(Intent.EXTRA_TEXT);
 
             try {
+                movieReviews = TheMovieDbJsonUtils.getStringFromJsonField(movieData, TheMovieDbJsonUtils.MOVIE_ID);
                 movieTitle.setText(TheMovieDbJsonUtils.getStringFromJsonField(movieData, TheMovieDbJsonUtils.TITLE));
                 movieRelDate.append(" " + TheMovieDbJsonUtils.getStringFromJsonField(movieData, TheMovieDbJsonUtils.RELEASE_DATE));
                 movieAvgVote.append(" " + TheMovieDbJsonUtils.getStringFromJsonField(movieData, TheMovieDbJsonUtils.VOTE_AVERAGE));
 
+                // get trailers and reviews
+                if (NetworkUtils.hazInternet(this)) {
+                    Bundle bundle = new Bundle();
+                    bundle.putString(MOVIE_ID, movieReviews);
+                    getSupportLoaderManager().restartLoader(TRAILERS_REVIEWS_LOADER, bundle, this);
+                } else {
+                    showErrorMessage();
+                    Log.i(LOG_TAG, "No internet!");
+                }
 
                 // working on poster data
                 moviePlot.setText(TheMovieDbJsonUtils.getStringFromJsonField(movieData, TheMovieDbJsonUtils.PLOT));
@@ -71,13 +92,13 @@ public class MovieDetail extends AppCompatActivity {
                         .into(moviePoster, new Callback() {
                             @Override
                             public void onSuccess() {
-                                img_error_message.setVisibility(View.GONE);
+                                imgErrorMessage.setVisibility(View.GONE);
                             }
 
                             @Override
                             public void onError() {
                                 Log.e(LOG_TAG, "No image available :(");
-                                img_error_message.setVisibility(View.VISIBLE);
+                                imgErrorMessage.setVisibility(View.VISIBLE);
                             }
                         });
             } catch (JSONException e) {
@@ -131,4 +152,61 @@ public class MovieDetail extends AppCompatActivity {
         AppIndex.AppIndexApi.end(client, getIndexApiAction());
         client.disconnect();
     }
-}
+
+    public void showReviews(View view) {
+        Intent intent = new Intent(this, UsersReviews.class);
+        intent.putExtra(Intent.EXTRA_TEXT, movieReviews);
+        startActivity(intent);
+    }
+
+    @Override
+    public Loader<String[]> onCreateLoader(int id, final Bundle args) {
+        return new AsyncTaskLoader<String[]>(this) {
+
+            @Override
+            protected void onStartLoading() {
+                if (args == null) {
+                    return;
+                } else {
+                    forceLoad();
+                }
+            }
+
+            @Override
+            public String[] loadInBackground() {
+                String trailersURL = NetworkUtils.getTrailersURL(args.getString(MOVIE_ID));
+                String reviewsURL = NetworkUtils.getReviewsURL(args.getString(MOVIE_ID));
+                try {
+                    String trailersData = NetworkUtils.getResponseFromHttpUrl(trailersURL);
+                    String reviewsData = NetworkUtils.getResponseFromHttpUrl(reviewsURL);
+                    return new String[]{trailersData, reviewsData};
+                } catch (IOException e) {
+                    e.printStackTrace();
+                    return null;
+                }
+            }
+
+            @Override
+            public void deliverResult(String[] data) {
+                super.deliverResult(data);
+            }
+        };
+    }
+
+        @Override
+        public void onLoadFinished(Loader<String[]> loader, String[] data) {
+        /* data[0] trailers, data[1] reviews */
+            // TODO: work on trailers data
+
+            // reviews data retrieved: show button to read them
+            if (data[1] != null){
+                movieReviews = data[1];
+                showReviewsButton.setVisibility(View.VISIBLE);
+            }
+        }
+
+        @Override
+        public void onLoaderReset(Loader<String[]> loader) {
+            // nothing to do
+        }
+    }
