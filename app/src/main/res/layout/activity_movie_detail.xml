@@ -40,15 +40,30 @@
             android:adjustViewBounds="true"
             android:contentDescription="@string/movie_poster"/>
 
-        <TextView
-            android:id="@+id/movie_title"
-            android:textSize="32sp"
-            android:padding="4dp"
-            android:textStyle="bold"
-            android:text="@string/generic_title"
-            android:textColor="@color/white"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content" />
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <ImageButton
+                android:id="@+id/b_add_favorite"
+                android:onClick="addToFavorites"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:src="@drawable/ic_star_border_black_24dp"/>
+
+            <TextView
+                android:id="@+id/movie_title"
+                android:textSize="32sp"
+                android:padding="4dp"
+                android:textStyle="bold"
+                android:text="@string/generic_title"
+                android:textColor="@color/white"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content" />
+
+        </LinearLayout>
 
         <TextView
             android:id="@+id/movie_release_date"

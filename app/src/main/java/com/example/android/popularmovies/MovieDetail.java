@@ -8,12 +8,12 @@ import android.support.v4.content.AsyncTaskLoader;
 import android.support.v4.content.Loader;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
-import android.view.MotionEvent;
 import android.view.View;
 import android.widget.Button;
+import android.widget.ImageButton;
 import android.widget.ImageView;
-import android.widget.ListView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.example.android.popularmovies.utilities.NetworkUtils;
 import com.example.android.popularmovies.utilities.TheMovieDbJsonUtils;
@@ -27,8 +27,6 @@ import com.squareup.picasso.Picasso;
 import org.json.JSONException;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
 
 public class MovieDetail extends AppCompatActivity implements LoaderManager.LoaderCallbacks<String[]>{
 
@@ -41,6 +39,7 @@ public class MovieDetail extends AppCompatActivity implements LoaderManager.Load
     private static final String MOVIE_ID = "movie_id";
     private static final int TRAILERS_REVIEWS_LOADER = 42;
     private Button showMovieTrailers;
+    private ImageButton addToFavorite;
 
     /**
      * ATTENTION: This was auto-generated to implement the App Indexing API.
@@ -72,6 +71,7 @@ public class MovieDetail extends AppCompatActivity implements LoaderManager.Load
             errorMessage = (TextView) findViewById(R.id.error_message);
             imgErrorMessage = (TextView) findViewById(R.id.img_error_message);
             showMovieTrailers = (Button) findViewById(R.id.b_show_trailers);
+            addToFavorite = (ImageButton) findViewById(R.id.b_add_favorite);
 
             String movieData = intent.getStringExtra(Intent.EXTRA_TEXT);
 
@@ -172,6 +172,12 @@ public class MovieDetail extends AppCompatActivity implements LoaderManager.Load
         startActivity(intent);
     }
 
+    public void addToFavorites(View view) {
+        Toast toast = Toast.makeText(this, "FAV", Toast.LENGTH_SHORT);
+        toast.show();
+    }
+
+
     @Override
     public Loader<String[]> onCreateLoader(int id, final Bundle args) {
         return new AsyncTaskLoader<String[]>(this) {
@@ -229,5 +235,4 @@ public class MovieDetail extends AppCompatActivity implements LoaderManager.Load
     public void onLoaderReset(Loader<String[]> loader) {
         // nothing to do
     }
-
 }

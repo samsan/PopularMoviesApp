@@ -4,6 +4,9 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.support.v4.app.LoaderManager;
+import android.support.v4.content.AsyncTaskLoader;
+import android.support.v4.content.Loader;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -27,7 +30,9 @@ import org.json.JSONException;
 
 import java.io.IOException;
 
-public class  MainActivity extends AppCompatActivity implements MovieListAdapter.MovieOnClickHandler{
+public class  MainActivity extends AppCompatActivity implements
+        MovieListAdapter.MovieOnClickHandler,
+        LoaderManager.LoaderCallbacks<String[]>{
 
     private Spinner sortSpinner;
     private ProgressBar progressBar;
@@ -35,6 +40,8 @@ public class  MainActivity extends AppCompatActivity implements MovieListAdapter
     private MovieListAdapter movieListAdapter;
     private TextView errorMessage;
     private static final String LOG_TAG = MainActivity.class.getSimpleName();
+    private static final String MOVIES_URL_QUERY = "MOVIES_URL_QUERY";
+    private static final int MOVIES_LOADER = 42;
 
     @Override
     public void openDetail(String movieData) {
@@ -88,7 +95,7 @@ public class  MainActivity extends AppCompatActivity implements MovieListAdapter
         movieListAdapter = new MovieListAdapter(this);
         recycleMovieList.setAdapter(movieListAdapter);
 
-        loadMovieData(NetworkUtils.THE_MOVIE_DB_POPULAR_MOVIES_URL);
+        // loadMovieData(NetworkUtils.THE_MOVIE_DB_POPULAR_MOVIES_URL);
     }
 
     public static int calculateNoOfColumns(Context context){
@@ -118,7 +125,9 @@ public class  MainActivity extends AppCompatActivity implements MovieListAdapter
 
     private void loadMovieData(String sortingUrl){
         if (NetworkUtils.hazInternet(this)) {
-            new FetchMoviesTask().execute(sortingUrl);
+            Bundle bundle = new Bundle();
+            bundle.putString(MOVIES_URL_QUERY, sortingUrl);
+            getSupportLoaderManager().restartLoader(MOVIES_LOADER, bundle, this);
         } else {
             Log.i(LOG_TAG, "no connection!");
             showErrorMessage();
@@ -137,37 +146,64 @@ public class  MainActivity extends AppCompatActivity implements MovieListAdapter
         errorMessage.setVisibility(View.VISIBLE);
     }
 
-    public class FetchMoviesTask extends AsyncTask<String, Void, String[]> {
-        @Override
-        protected void onPreExecute() {
-            progressBar.setVisibility(View.VISIBLE);
-            super.onPreExecute();
-        }
+    @Override
+    public Loader<String[]> onCreateLoader(int id, final Bundle args) {
+        return new AsyncTaskLoader<String[]>(this) {
+            private String[] mCachedata = null;
+            @Override
+            protected void onStartLoading() {
+                if (args == null){
+                    // no actions to perform
+                    return;
+                }
+                if (mCachedata != null){
+                    // No new spinner selection and data already stored: no new download :)
+                    deliverResult(mCachedata);
+                } else {
+                    progressBar.setVisibility(View.VISIBLE);
+                    forceLoad();
+                }
 
-        @Override
-        protected String[] doInBackground(String... params) {
-            String[] moviesData = null;
-            String sortingUrl = params[0];
-            try {
-                String res = new NetworkUtils().getResponseFromHttpUrl(sortingUrl);
-                moviesData = TheMovieDbJsonUtils.getMoviesSimpleData(MainActivity.this, res);
-            } catch (JSONException e) {
-                e.printStackTrace();
-            } catch (IOException e) {
-                e.printStackTrace();
             }
-            return moviesData;
-        }
 
-        @Override
-        protected void onPostExecute(String[] movies) {
-            progressBar.setVisibility(View.GONE);
-            if (movies != null){
-                showMoviesData();
-                movieListAdapter.setMoviesData(movies);
-            } else {
-                showErrorMessage();
+            @Override
+            public String[] loadInBackground() {
+                String[] moviesData;
+                String sortingUrl = args.getString(MOVIES_URL_QUERY);
+                try {
+                    String res = new NetworkUtils().getResponseFromHttpUrl(sortingUrl);
+                    moviesData = TheMovieDbJsonUtils.getMoviesSimpleData(MainActivity.this, res);
+                } catch (JSONException | IOException e) {
+                    e.printStackTrace();
+                    return null;
+                }
+                return moviesData;
             }
+
+            @Override
+            public void deliverResult(String[] data) {
+                mCachedata = data;
+                super.deliverResult(data);
+
+            }
+        };
+    }
+
+    @Override
+    public void onLoadFinished(Loader<String[]> loader, String[] movies) {
+        progressBar.setVisibility(View.GONE);
+        if (movies != null){
+            showMoviesData();
+            movieListAdapter.setMoviesData(movies);
+        } else {
+            showErrorMessage();
         }
     }
+
+    @Override
+    public void onLoaderReset(Loader<String[]> loader) {
+        // nothing to do
+    }
+
+
 }

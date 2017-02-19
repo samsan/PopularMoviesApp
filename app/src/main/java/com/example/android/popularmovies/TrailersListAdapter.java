@@ -3,6 +3,7 @@ package com.example.android.popularmovies;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
+import android.media.Image;
 import android.net.Uri;
 import android.support.annotation.NonNull;
 import android.view.LayoutInflater;
@@ -10,6 +11,8 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.ImageButton;
+import android.widget.TextView;
 
 import com.example.android.popularmovies.utilities.NetworkUtils;
 import com.example.android.popularmovies.utilities.TheMovieDbJsonUtils;
@@ -35,16 +38,16 @@ public class TrailersListAdapter extends ArrayAdapter<String> {
             convertView = LayoutInflater.from(getContext()).inflate(R.layout.movie_trailer, parent, false);
         }
 
-        final Button bShowTrailer = (Button) convertView.findViewById(R.id.b_show_trailer);
-        final Button bShareTrailer = (Button) convertView.findViewById(R.id.b_share_trailer);
+        final TextView trailerName = (TextView) convertView.findViewById(R.id.trailer_name);
+        final ImageButton bShowTrailer = (ImageButton) convertView.findViewById(R.id.b_show_trailer);
+        final ImageButton bShareTrailer = (ImageButton) convertView.findViewById(R.id.b_share_trailer);
 
         try {
             String trailerTitle = TheMovieDbJsonUtils.getStringFromJsonField(trailerData, TheMovieDbJsonUtils.TRAILER_TITLE);
             String trailerYouTubeId = TheMovieDbJsonUtils.getStringFromJsonField(trailerData, TheMovieDbJsonUtils.TRAILER_YT_KEY);
             final Uri trailerYtUri = NetworkUtils.BuildYouTubeUri(trailerYouTubeId);
 
-            bShowTrailer.setText(trailerTitle);
-
+            trailerName.setText(trailerTitle);
 
             // launching implicit intent
             bShowTrailer.setOnClickListener(new View.OnClickListener() {
