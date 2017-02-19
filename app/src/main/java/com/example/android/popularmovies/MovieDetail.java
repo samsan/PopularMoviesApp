@@ -8,9 +8,11 @@ import android.support.v4.content.AsyncTaskLoader;
 import android.support.v4.content.Loader;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
+import android.view.MotionEvent;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
+import android.widget.ListView;
 import android.widget.TextView;
 
 import com.example.android.popularmovies.utilities.NetworkUtils;
@@ -25,6 +27,8 @@ import com.squareup.picasso.Picasso;
 import org.json.JSONException;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
 
 public class MovieDetail extends AppCompatActivity implements LoaderManager.LoaderCallbacks<String[]>{
 
@@ -33,8 +37,10 @@ public class MovieDetail extends AppCompatActivity implements LoaderManager.Load
     private TextView imgErrorMessage;
     private Button showReviewsButton;
     private static String movieReviews;
+    private static String movieTrailers;
     private static final String MOVIE_ID = "movie_id";
     private static final int TRAILERS_REVIEWS_LOADER = 42;
+    private Button showMovieTrailers;
 
     /**
      * ATTENTION: This was auto-generated to implement the App Indexing API.
@@ -65,11 +71,12 @@ public class MovieDetail extends AppCompatActivity implements LoaderManager.Load
             showReviewsButton = (Button) findViewById(R.id.b_show_reviews);
             errorMessage = (TextView) findViewById(R.id.error_message);
             imgErrorMessage = (TextView) findViewById(R.id.img_error_message);
+            showMovieTrailers = (Button) findViewById(R.id.b_show_trailers);
 
             String movieData = intent.getStringExtra(Intent.EXTRA_TEXT);
 
             try {
-                movieReviews = TheMovieDbJsonUtils.getStringFromJsonField(movieData, TheMovieDbJsonUtils.MOVIE_ID);
+                String movieId = TheMovieDbJsonUtils.getStringFromJsonField(movieData, TheMovieDbJsonUtils.MOVIE_ID);
                 movieTitle.setText(TheMovieDbJsonUtils.getStringFromJsonField(movieData, TheMovieDbJsonUtils.TITLE));
                 movieRelDate.append(" " + TheMovieDbJsonUtils.getStringFromJsonField(movieData, TheMovieDbJsonUtils.RELEASE_DATE));
                 movieAvgVote.append(" " + TheMovieDbJsonUtils.getStringFromJsonField(movieData, TheMovieDbJsonUtils.VOTE_AVERAGE));
@@ -77,7 +84,7 @@ public class MovieDetail extends AppCompatActivity implements LoaderManager.Load
                 // get trailers and reviews
                 if (NetworkUtils.hazInternet(this)) {
                     Bundle bundle = new Bundle();
-                    bundle.putString(MOVIE_ID, movieReviews);
+                    bundle.putString(MOVIE_ID, movieId);
                     getSupportLoaderManager().restartLoader(TRAILERS_REVIEWS_LOADER, bundle, this);
                 } else {
                     showErrorMessage();
@@ -159,6 +166,12 @@ public class MovieDetail extends AppCompatActivity implements LoaderManager.Load
         startActivity(intent);
     }
 
+    public void showTrailers(View view) {
+        Intent intent = new Intent(this, MovieTrailers.class);
+        intent.putExtra(Intent.EXTRA_TEXT, movieTrailers);
+        startActivity(intent);
+    }
+
     @Override
     public Loader<String[]> onCreateLoader(int id, final Bundle args) {
         return new AsyncTaskLoader<String[]>(this) {
@@ -193,20 +206,28 @@ public class MovieDetail extends AppCompatActivity implements LoaderManager.Load
         };
     }
 
-        @Override
-        public void onLoadFinished(Loader<String[]> loader, String[] data) {
-        /* data[0] trailers, data[1] reviews */
-            // TODO: work on trailers data
+    @Override
+    public void onLoadFinished(Loader<String[]> loader, String[] data) {
+            /* data[0] trailers, data[1] reviews */
+        if (data[0] != null){
+            movieTrailers = data[0];
+            showMovieTrailers.setVisibility(View.VISIBLE);
 
-            // reviews data retrieved: show button to read them
-            if (data[1] != null){
-                movieReviews = data[1];
-                showReviewsButton.setVisibility(View.VISIBLE);
-            }
+        } else {
+            showMovieTrailers.setVisibility(View.INVISIBLE);
         }
-
-        @Override
-        public void onLoaderReset(Loader<String[]> loader) {
-            // nothing to do
+        // reviews data retrieved: show button to read them
+        if (data[1] != null){
+            movieReviews = data[1];
+            showReviewsButton.setVisibility(View.VISIBLE);
+        } else {
+            showReviewsButton.setVisibility(View.INVISIBLE);
         }
     }
+
+    @Override
+    public void onLoaderReset(Loader<String[]> loader) {
+        // nothing to do
+    }
+
+}

@@ -16,8 +16,7 @@ import org.json.JSONException;
  * Created by massi on 25/01/2017.
  */
 
-public class
-MovieListAdapter extends RecyclerView.Adapter<MovieListAdapter.MovieListAdapterViewHolder>{
+public class MovieListAdapter extends RecyclerView.Adapter<MovieListAdapter.MovieListAdapterViewHolder>{
 
     private String[] moviesData;
     private final MovieOnClickHandler movieClickHandler;

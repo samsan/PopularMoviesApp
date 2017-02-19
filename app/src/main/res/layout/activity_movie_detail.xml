@@ -80,8 +80,20 @@
             android:layout_height="wrap_content" />
 
         <Button
+            android:id="@+id/b_show_trailers"
+            android:textColor="@color/black"
+            android:layout_marginTop="20dp"
+            android:visibility="invisible"
+            android:background="@color/yellow"
+            android:text="@string/show_movie_trailers"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:onClick="showTrailers"/>
+
+        <Button
             android:id="@+id/b_show_reviews"
             android:textColor="@color/black"
+            android:layout_marginTop="10dp"
             android:visibility="invisible"
             android:background="@color/yellow"
             android:text="@string/read_user_reviews"

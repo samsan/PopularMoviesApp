@@ -3,6 +3,9 @@
     <string name="poster_cd">A movie poster</string>
     <string name="no_data">No data available. Try later :)</string>
     <string name="movie_poster">movie poster</string>
+    <string name="movie_trailer_generic">#trailer</string>
+    <string name="choose_app">Choose which app to use</string>
+    <string name="movie_trailer_generic_error">#error</string>
     <string name="release_date">Release date:</string>
     <string name="vote_average">Vote average:</string>
     <string name="refresh">refresh</string>
@@ -13,6 +16,8 @@
     <string name="check_internet">No data, please heck your internet connection</string>
     <string name="no_internet_message">No data, please check your internet connection</string>
     <string name="no_movie_reviews">No review available for this movie</string>
+    <string name="share">share it!</string>
+    <string name="show_movie_trailers">Show me trailers!</string>
     <string-array name="sort_types_array">
         <item>Most popular</item>
         <item>Highest rated</item>

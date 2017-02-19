@@ -21,13 +21,16 @@ public class NetworkUtils {
 
     private static final String API_KEY = "a73856e34fa83f9eb425a3df54d39608";
 
+    private static final String YOUTUBE_BASE_URL = "https://www.youtube.com/watch";
+    private static final String YOUTUBE_VIDEO_PARAMETER = "v";
+
     public static final String THE_MOVIE_DB_BASE_URL = "http://api.themoviedb.org/3/movie";
 
     public static final String THE_MOVIE_DB_POPULAR_MOVIES_URL = THE_MOVIE_DB_BASE_URL + "/popular";
     public static final String THE_MOVIE_DB_TOP_RATED_MOVIES_URL = THE_MOVIE_DB_BASE_URL + "/top_rated";
     public static final String THE_MOVIE_DB_MOVIE_TRAILERS_PATH = "/videos";
-    public static final String THE_MOVIE_DB_MOVIE_REVIEWS_PATH = "/reviews";
 
+    public static final String THE_MOVIE_DB_MOVIE_REVIEWS_PATH = "/reviews";
     private static final String THE_MOVIE_DB_POSTER_BASE_URL = "https://image.tmdb.org/t/p";
     private static final String POSTER_URL_RECOMMENDED_SIZE = THE_MOVIE_DB_POSTER_BASE_URL + "/w185";
     private static final String POSTER_URL_SIZE_BIG = THE_MOVIE_DB_POSTER_BASE_URL + "/w780";
@@ -35,6 +38,13 @@ public class NetworkUtils {
     private static final String APY_KEY_PARAM = "api_key";
 
     public NetworkUtils(){
+    }
+
+    public static Uri BuildYouTubeUri(String videoId){
+        Uri buildUri = Uri.parse(YOUTUBE_BASE_URL).buildUpon()
+                .appendQueryParameter(YOUTUBE_VIDEO_PARAMETER, videoId)
+                .build();
+        return buildUri;
     }
 
     private static URL BuildUrl(String queryURL){

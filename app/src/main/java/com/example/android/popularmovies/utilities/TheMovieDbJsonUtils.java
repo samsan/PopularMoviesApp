@@ -16,6 +16,8 @@ public class TheMovieDbJsonUtils {
     public static final String PLOT = "overview";
     public static final String RELEASE_DATE = "release_date";
     public static final String TITLE = "title";
+    public static final String TRAILER_TITLE = "name";
+    public static final String TRAILER_YT_KEY = "key";
     public static final String VOTE_AVERAGE = "vote_average";
     public static final String REVIEW_AUTHOR = "author";
     public static final String REVIEW_CONTENT = "content";
