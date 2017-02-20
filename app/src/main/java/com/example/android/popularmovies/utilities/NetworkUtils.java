@@ -19,7 +19,7 @@ import java.util.Scanner;
 
 public class NetworkUtils {
 
-    private static final String API_KEY = "***";
+    private static final String API_KEY = "a73856e34fa83f9eb425a3df54d39608";
 
     private static final String YOUTUBE_BASE_URL = "https://www.youtube.com/watch";
     private static final String YOUTUBE_VIDEO_PARAMETER = "v";
