@@ -6,13 +6,13 @@ import android.os.Bundle;
 import android.view.View;
 import android.widget.ListView;
 
+import com.example.android.popularmovies.adapters.TrailersListAdapter;
 import com.example.android.popularmovies.utilities.TheMovieDbJsonUtils;
 
 import org.json.JSONException;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 
 public class MovieTrailers extends AppCompatActivity {
 
