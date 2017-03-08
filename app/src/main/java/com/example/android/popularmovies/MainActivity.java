@@ -48,7 +48,6 @@ public class  MainActivity extends AppCompatActivity implements
         Intent intent = new Intent(this, MovieDetail.class);
         intent.putExtra(Intent.EXTRA_TEXT, movieData);
         startActivity(intent);
-        // get clicked view holder and send data to intent details
     }
 
     @Override

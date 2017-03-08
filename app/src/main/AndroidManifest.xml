@@ -33,6 +33,11 @@
 
         <activity android:name=".UsersReviews" />
         <activity android:name=".MovieTrailers"></activity>
+
+        <provider
+            android:name=".data.PopularMoviesProvider"
+            android:authorities="com.example.android.popularmovies"
+            android:exported="false"/>
     </application>
 
 </manifest>

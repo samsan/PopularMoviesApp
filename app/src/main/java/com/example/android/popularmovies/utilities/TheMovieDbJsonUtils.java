@@ -76,4 +76,14 @@ public class TheMovieDbJsonUtils {
         }
         return null;
     }
+
+    public static String getJsonArrayData(String data, String field) throws  JSONException {
+        JSONObject jsonObject = new JSONObject(data);
+        if (jsonObject.has(field)) {
+            JSONArray jsonArray = jsonObject.getJSONArray(field);
+            return jsonArray.toString();
+        }
+        return null;
+    }
+
 }

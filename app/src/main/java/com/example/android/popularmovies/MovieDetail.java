@@ -1,10 +1,13 @@
 package com.example.android.popularmovies;
 
+import android.content.ContentValues;
 import android.content.Intent;
+import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.AsyncTaskLoader;
+import android.support.v4.content.CursorLoader;
 import android.support.v4.content.Loader;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
@@ -15,12 +18,9 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.example.android.popularmovies.data.PopularMoviesContract;
 import com.example.android.popularmovies.utilities.NetworkUtils;
 import com.example.android.popularmovies.utilities.TheMovieDbJsonUtils;
-import com.google.android.gms.appindexing.Action;
-import com.google.android.gms.appindexing.AppIndex;
-import com.google.android.gms.appindexing.Thing;
-import com.google.android.gms.common.api.GoogleApiClient;
 import com.squareup.picasso.Callback;
 import com.squareup.picasso.Picasso;
 
@@ -28,7 +28,7 @@ import org.json.JSONException;
 
 import java.io.IOException;
 
-public class MovieDetail extends AppCompatActivity implements LoaderManager.LoaderCallbacks<String[]>{
+public class MovieDetail extends AppCompatActivity{
 
     private static final String LOG_TAG = MovieDetail.class.getSimpleName();
     private TextView errorMessage;
@@ -37,66 +37,198 @@ public class MovieDetail extends AppCompatActivity implements LoaderManager.Load
     private static String movieReviews;
     private static String movieTrailers;
     private static final String MOVIE_ID = "movie_id";
-    private static final int TRAILERS_REVIEWS_LOADER = 42;
     private Button showMovieTrailers;
-    private ImageButton addToFavorite;
+    private ImageButton mFavorite;
+    private String movieId;
+    private String movieTitle;
 
-    /**
-     * ATTENTION: This was auto-generated to implement the App Indexing API.
-     * See https://g.co/AppIndexing/AndroidStudio for more information.
-     */
-    private GoogleApiClient client;
+    private static boolean isMovieFavorite;
+
+    public final String[] MOVIE_DETAIL_PROJECTION = {
+            PopularMoviesContract.PopularMoviesEntry.COLUMN_ID,
+            PopularMoviesContract.PopularMoviesEntry.COLUMN_TITLE,
+    };
+    public final int INDEX_COLUMN_ID = 0;
+
+    public final int INDEX_COLUMN_TITLE = 1;
+    private static final int TRAILERS_REVIEWS_LOADER = 41;
+
+    private static final int IS_FAVORITE_LOADER = 31;
+    private LoaderManager.LoaderCallbacks<String[]> trailerReviewsLoader;
+
+    private LoaderManager.LoaderCallbacks<Cursor> favoritesLoader;
 
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        TextView movieTitle;
-        TextView movieRelDate;
-        ImageView moviePoster;
-        TextView movieAvgVote;
-        TextView moviePlot;
+        TextView twMovieRelDate;
+        ImageView iwMoviePoster;
+        TextView twMovieAvgVote;
+        TextView twMoviePlot;
+        TextView twMovieTitle;
 
         setContentView(R.layout.activity_movie_detail);
 
+        trailerReviewsLoader = new LoaderManager.LoaderCallbacks<String[]>() {
+            @Override
+            public Loader<String[]> onCreateLoader(int id, final Bundle args) {
+                return new AsyncTaskLoader<String[]>(getBaseContext()) {
+
+                    @Override
+                    protected void onStartLoading() {
+                        if (args == null) {
+                            return;
+                        } else {
+                            forceLoad();
+                        }
+                    }
+
+                    @Override
+                    public String[] loadInBackground() {
+                        String trailersURL = NetworkUtils.getTrailersURL(args.getString(MOVIE_ID));
+                        String reviewsURL = NetworkUtils.getReviewsURL(args.getString(MOVIE_ID));
+                        try {
+                            String trailersData = NetworkUtils.getResponseFromHttpUrl(trailersURL);
+                            String reviewsData = NetworkUtils.getResponseFromHttpUrl(reviewsURL);
+                            return new String[]{trailersData, reviewsData};
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                            return null;
+                        }
+                    }
+
+                    @Override
+                    public void deliverResult(String[] data) {
+                        super.deliverResult(data);
+                    }
+                };
+            }
+
+            @Override
+            public void onLoadFinished(Loader<String[]> loader, String[] data) {
+                try {
+                    movieTrailers = TheMovieDbJsonUtils.getJsonArrayData(data[0], "results");
+                    movieReviews = TheMovieDbJsonUtils.getJsonArrayData(data[1], "results");
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+
+                if (movieTrailers != null){
+                    showMovieTrailers.setVisibility(View.VISIBLE);
+                } else {
+                    showMovieTrailers.setVisibility(View.INVISIBLE);
+                }
+                if (movieReviews != null){
+                    showReviewsButton.setVisibility(View.VISIBLE);
+                } else {
+                    showReviewsButton.setVisibility(View.INVISIBLE);
+                }
+            }
+
+            @Override
+            public void onLoaderReset(Loader<String[]> loader) {
+                // nothing to do
+            }
+        };
+
+        favoritesLoader = new LoaderManager.LoaderCallbacks<Cursor>() {
+            @Override
+            public Loader<Cursor> onCreateLoader(int loaderId, Bundle args) {
+                switch (loaderId){
+                    case IS_FAVORITE_LOADER:
+                        if (args != null){
+                            String mId = args.getString(MOVIE_ID, null);
+                            if (mId != null){
+                                Uri movieUri = Uri.withAppendedPath(
+                                        PopularMoviesContract.PopularMoviesEntry.CONTENT_URI,
+                                        mId);
+                                String[] selectionArgs = {mId};
+                                return new CursorLoader(getBaseContext(),
+                                        movieUri,
+                                        MOVIE_DETAIL_PROJECTION,
+                                        null, selectionArgs, null);
+                            }
+                        }
+                        break;
+                    default:
+                        throw new UnsupportedOperationException("Action does not exist " + loaderId);
+                }
+                return null;
+            }
+
+            @Override
+            public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
+                int loaderId = loader.getId();
+                boolean isCursorValid = false;
+                if (data != null && data.moveToFirst()){
+                    isCursorValid = true;
+                }
+
+                if (isCursorValid){
+                    switch (loaderId){
+                        case IS_FAVORITE_LOADER:
+                            // movie in mFavorite
+                            favIconChangeToFavorite();
+                            isMovieFavorite = true;
+                            break;
+                    }
+                } else {
+                    switch (loaderId){
+                        case IS_FAVORITE_LOADER:
+                            // movie not in mFavorite
+                            favIconChangeToUnfavorite();
+                            isMovieFavorite = false;
+                            break;
+                    }
+                }
+            }
+
+            @Override
+            public void onLoaderReset(Loader<Cursor> loader) {
+                // do nothing
+            }
+        };
+
         Intent intent = getIntent();
         if (intent.hasExtra(Intent.EXTRA_TEXT)) {
-            movieTitle = (TextView) findViewById(R.id.movie_title);
-            movieRelDate = (TextView) findViewById(R.id.movie_release_date);
-            moviePoster = (ImageView) findViewById(R.id.movie_poster);
-            movieAvgVote = (TextView) findViewById(R.id.movie_vote_avg);
-            moviePlot = (TextView) findViewById(R.id.movie_plot);
+            twMovieTitle = (TextView) findViewById(R.id.movie_title);
+            twMovieRelDate = (TextView) findViewById(R.id.movie_release_date);
+            iwMoviePoster = (ImageView) findViewById(R.id.movie_poster);
+            twMovieAvgVote = (TextView) findViewById(R.id.movie_vote_avg);
+            twMoviePlot = (TextView) findViewById(R.id.movie_plot);
             showReviewsButton = (Button) findViewById(R.id.b_show_reviews);
             errorMessage = (TextView) findViewById(R.id.error_message);
             imgErrorMessage = (TextView) findViewById(R.id.img_error_message);
             showMovieTrailers = (Button) findViewById(R.id.b_show_trailers);
-            addToFavorite = (ImageButton) findViewById(R.id.b_add_favorite);
+            mFavorite = (ImageButton) findViewById(R.id.b_add_favorite);
 
             String movieData = intent.getStringExtra(Intent.EXTRA_TEXT);
 
             try {
-                String movieId = TheMovieDbJsonUtils.getStringFromJsonField(movieData, TheMovieDbJsonUtils.MOVIE_ID);
-                movieTitle.setText(TheMovieDbJsonUtils.getStringFromJsonField(movieData, TheMovieDbJsonUtils.TITLE));
-                movieRelDate.append(" " + TheMovieDbJsonUtils.getStringFromJsonField(movieData, TheMovieDbJsonUtils.RELEASE_DATE));
-                movieAvgVote.append(" " + TheMovieDbJsonUtils.getStringFromJsonField(movieData, TheMovieDbJsonUtils.VOTE_AVERAGE));
+                movieId = TheMovieDbJsonUtils.getStringFromJsonField(movieData, TheMovieDbJsonUtils.MOVIE_ID);
+                movieTitle = TheMovieDbJsonUtils.getStringFromJsonField(movieData, TheMovieDbJsonUtils.TITLE);
+                twMovieTitle.setText(movieTitle);
+                twMovieRelDate.append(" " + TheMovieDbJsonUtils.getStringFromJsonField(movieData, TheMovieDbJsonUtils.RELEASE_DATE));
+                twMovieAvgVote.append(" " + TheMovieDbJsonUtils.getStringFromJsonField(movieData, TheMovieDbJsonUtils.VOTE_AVERAGE));
 
                 // get trailers and reviews
                 if (NetworkUtils.hazInternet(this)) {
                     Bundle bundle = new Bundle();
                     bundle.putString(MOVIE_ID, movieId);
-                    getSupportLoaderManager().restartLoader(TRAILERS_REVIEWS_LOADER, bundle, this);
+                    getSupportLoaderManager().restartLoader(TRAILERS_REVIEWS_LOADER, bundle, trailerReviewsLoader);
                 } else {
                     showErrorMessage();
                     Log.i(LOG_TAG, "No internet!");
                 }
 
                 // working on poster data
-                moviePlot.setText(TheMovieDbJsonUtils.getStringFromJsonField(movieData, TheMovieDbJsonUtils.PLOT));
+                twMoviePlot.setText(TheMovieDbJsonUtils.getStringFromJsonField(movieData, TheMovieDbJsonUtils.PLOT));
                 boolean hdImg = true;
                 Picasso.with(this)
                         .load(TheMovieDbJsonUtils.getMoviePosterPath(movieData, hdImg))
-                        .into(moviePoster, new Callback() {
+                        .into(iwMoviePoster, new Callback() {
                             @Override
                             public void onSuccess() {
                                 imgErrorMessage.setVisibility(View.GONE);
@@ -114,50 +246,36 @@ public class MovieDetail extends AppCompatActivity implements LoaderManager.Load
                 showErrorMessage();
             }
         }
+        restartFavoriteLoader();
+    }
 
-        // ATTENTION: This was auto-generated to implement the App Indexing API.
-        // See https://g.co/AppIndexing/AndroidStudio for more information.
-        client = new GoogleApiClient.Builder(this).addApi(AppIndex.API).build();
+    private void restartFavoriteLoader(){
+        // find out if movie in favorites
+        Bundle bundle = new Bundle();
+        bundle.putString(MOVIE_ID, movieId);
+        getSupportLoaderManager().restartLoader(IS_FAVORITE_LOADER, bundle, favoritesLoader);
+    }
+
+    private void favIconChangeToFavorite(){
+        mFavorite.setImageResource(R.drawable.ic_star_black_24dp);
+    }
+
+    private void favIconChangeToUnfavorite(){
+        mFavorite.setImageResource(R.drawable.ic_star_border_black_24dp);
     }
 
     private void showErrorMessage() {
         errorMessage.setVisibility(View.VISIBLE);
     }
 
-    /**
-     * ATTENTION: This was auto-generated to implement the App Indexing API.
-     * See https://g.co/AppIndexing/AndroidStudio for more information.
-     */
-    public Action getIndexApiAction() {
-        Thing object = new Thing.Builder()
-                .setName("MovieDetail Page") // TODO: Define a title for the content shown.
-                // TODO: Make sure this auto-generated URL is correct.
-                .setUrl(Uri.parse("http://[ENTER-YOUR-URL-HERE]"))
-                .build();
-        return new Action.Builder(Action.TYPE_VIEW)
-                .setObject(object)
-                .setActionStatus(Action.STATUS_TYPE_COMPLETED)
-                .build();
-    }
-
     @Override
     public void onStart() {
         super.onStart();
-
-        // ATTENTION: This was auto-generated to implement the App Indexing API.
-        // See https://g.co/AppIndexing/AndroidStudio for more information.
-        client.connect();
-        AppIndex.AppIndexApi.start(client, getIndexApiAction());
     }
 
     @Override
     public void onStop() {
         super.onStop();
-
-        // ATTENTION: This was auto-generated to implement the App Indexing API.
-        // See https://g.co/AppIndexing/AndroidStudio for more information.
-        AppIndex.AppIndexApi.end(client, getIndexApiAction());
-        client.disconnect();
     }
 
     public void showReviews(View view) {
@@ -172,67 +290,21 @@ public class MovieDetail extends AppCompatActivity implements LoaderManager.Load
         startActivity(intent);
     }
 
-    public void addToFavorites(View view) {
-        Toast toast = Toast.makeText(this, "FAV", Toast.LENGTH_SHORT);
-        toast.show();
-    }
-
-
-    @Override
-    public Loader<String[]> onCreateLoader(int id, final Bundle args) {
-        return new AsyncTaskLoader<String[]>(this) {
-
-            @Override
-            protected void onStartLoading() {
-                if (args == null) {
-                    return;
-                } else {
-                    forceLoad();
-                }
-            }
-
-            @Override
-            public String[] loadInBackground() {
-                String trailersURL = NetworkUtils.getTrailersURL(args.getString(MOVIE_ID));
-                String reviewsURL = NetworkUtils.getReviewsURL(args.getString(MOVIE_ID));
-                try {
-                    String trailersData = NetworkUtils.getResponseFromHttpUrl(trailersURL);
-                    String reviewsData = NetworkUtils.getResponseFromHttpUrl(reviewsURL);
-                    return new String[]{trailersData, reviewsData};
-                } catch (IOException e) {
-                    e.printStackTrace();
-                    return null;
-                }
-            }
-
-            @Override
-            public void deliverResult(String[] data) {
-                super.deliverResult(data);
-            }
-        };
-    }
-
-    @Override
-    public void onLoadFinished(Loader<String[]> loader, String[] data) {
-            /* data[0] trailers, data[1] reviews */
-        if (data[0] != null){
-            movieTrailers = data[0];
-            showMovieTrailers.setVisibility(View.VISIBLE);
-
+    public void actionFavorite(View view) {
+        if (isMovieFavorite){
+            getContentResolver().delete(
+                    Uri.withAppendedPath(PopularMoviesContract.PopularMoviesEntry.CONTENT_URI, movieId),
+                    null, null);
+            favIconChangeToUnfavorite();
+            Toast.makeText(this, "deleted from favorites", Toast.LENGTH_SHORT).show();
         } else {
-            showMovieTrailers.setVisibility(View.INVISIBLE);
+            ContentValues contentValues = new ContentValues();
+            contentValues.put(MoviesContract.MovieEntry.COLUMN_MOVIE_ID, movieId);
+            contentValues.put(MoviesContract.MovieEntry.COLUMN_MOVIE_TITLE, movieTitle);
+            getContentResolver().insert(PopularMoviesContract.PopularMoviesEntry.CONTENT_URI, contentValues);
+            favIconChangeToFavorite();
+            Toast.makeText(this, "added to favorites", Toast.LENGTH_SHORT).show();
         }
-        // reviews data retrieved: show button to read them
-        if (data[1] != null){
-            movieReviews = data[1];
-            showReviewsButton.setVisibility(View.VISIBLE);
-        } else {
-            showReviewsButton.setVisibility(View.INVISIBLE);
-        }
-    }
-
-    @Override
-    public void onLoaderReset(Loader<String[]> loader) {
-        // nothing to do
+        restartFavoriteLoader();
     }
 }
