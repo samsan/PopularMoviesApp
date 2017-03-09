@@ -58,6 +58,7 @@ public class  MainActivity extends AppCompatActivity implements
 
     private static final int FAV_MOVIE_ID = 0;
 
+    private static final String SPINNER_SELECTED_ITEM_INDEX = "spinner_selected_item_index";
     private static final int SPINNER_POPULAR_MOVIES_INDEX = 0;
     private static final int SPINNER_TOP_RATED_MOVIES_INDEX = 1;
     private static final int SPINNER_FAVORITE_MOVIES_INDEX = 2;
@@ -267,7 +268,7 @@ public class  MainActivity extends AppCompatActivity implements
                 String[] moviesData;
                 String sortingUrl = args.getString(MOVIES_URL_QUERY);
                 try {
-                    String res = new NetworkUtils().getResponseFromHttpUrl(sortingUrl);
+                    String res = NetworkUtils.getResponseFromHttpUrl(sortingUrl);
                     moviesData = TheMovieDbJsonUtils.getMoviesSimpleData(MainActivity.this, res);
                 } catch (JSONException | IOException e) {
                     e.printStackTrace();
