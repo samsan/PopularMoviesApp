@@ -44,13 +44,11 @@ public class MovieDetail extends AppCompatActivity{
 
     private static boolean isMovieFavorite;
 
-    public final String[] MOVIE_DETAIL_PROJECTION = {
+    public static final String[] MOVIE_DETAIL_PROJECTION = {
             PopularMoviesContract.PopularMoviesEntry.COLUMN_ID,
             PopularMoviesContract.PopularMoviesEntry.COLUMN_TITLE,
     };
-    public final int INDEX_COLUMN_ID = 0;
 
-    public final int INDEX_COLUMN_TITLE = 1;
     private static final int TRAILERS_REVIEWS_LOADER = 41;
 
     private static final int IS_FAVORITE_LOADER = 31;

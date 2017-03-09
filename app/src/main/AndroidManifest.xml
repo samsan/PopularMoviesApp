@@ -32,7 +32,7 @@
             android:value="@integer/google_play_services_version" />
 
         <activity android:name=".UsersReviews" />
-        <activity android:name=".MovieTrailers"></activity>
+        <activity android:name=".MovieTrailers"/>
 
         <provider
             android:name=".data.PopularMoviesProvider"

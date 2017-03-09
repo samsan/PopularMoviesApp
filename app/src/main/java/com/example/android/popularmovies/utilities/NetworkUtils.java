@@ -13,13 +13,15 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Scanner;
 
+import static com.example.android.popularmovies.SensibleData.THE_MOVIE_DB_API_KEY;
+
 /**
  * Created by massi on 26/01/2017.
  */
 
 public class NetworkUtils {
 
-    private static final String API_KEY = "***";
+    private static final String API_KEY = THE_MOVIE_DB_API_KEY;
 
     private static final String YOUTUBE_BASE_URL = "https://www.youtube.com/watch";
     private static final String YOUTUBE_VIDEO_PARAMETER = "v";
@@ -112,6 +114,10 @@ public class NetworkUtils {
 
     public static String getReviewsURL(String movieId){
         return THE_MOVIE_DB_BASE_URL + "/" + movieId + THE_MOVIE_DB_MOVIE_REVIEWS_PATH;
+    }
+
+    public static String getMovieDetailsURL(String movieId){
+        return THE_MOVIE_DB_BASE_URL + "/" + movieId;
     }
 
 }

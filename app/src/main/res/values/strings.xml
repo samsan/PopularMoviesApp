@@ -22,5 +22,6 @@
     <string-array name="sort_types_array">
         <item>Most popular</item>
         <item>Highest rated</item>
+        <item>Favorites</item>
     </string-array>
 </resources>

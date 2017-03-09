@@ -2,6 +2,7 @@ package com.example.android.popularmovies;
 
 import android.content.Context;
 import android.content.Intent;
+import android.database.Cursor;
 import android.os.Bundle;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.AsyncTaskLoader;
@@ -23,12 +24,16 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.android.popularmovies.adapters.MovieListAdapter;
+import com.example.android.popularmovies.data.PopularMoviesContract;
 import com.example.android.popularmovies.utilities.NetworkUtils;
 import com.example.android.popularmovies.utilities.TheMovieDbJsonUtils;
 
 import org.json.JSONException;
 
 import java.io.IOException;
+import java.util.ArrayList;
+
+import static com.example.android.popularmovies.utilities.NetworkUtils.getMovieDetailsURL;
 
 public class  MainActivity extends AppCompatActivity implements
         MovieListAdapter.MovieOnClickHandler,
@@ -42,6 +47,20 @@ public class  MainActivity extends AppCompatActivity implements
     private static final String LOG_TAG = MainActivity.class.getSimpleName();
     private static final String MOVIES_URL_QUERY = "MOVIES_URL_QUERY";
     private static final int MOVIES_LOADER = 42;
+    private static final int FAV_MOVIES_LOADER = 43;
+
+    private static LoaderManager.LoaderCallbacks<String[]> favoritesLoader;
+
+    public static final String[] MOVIE_DETAIL_PROJECTION = {
+            PopularMoviesContract.PopularMoviesEntry.COLUMN_ID,
+            PopularMoviesContract.PopularMoviesEntry.COLUMN_TITLE,
+    };
+
+    private static final int FAV_MOVIE_ID = 0;
+
+    private static final int SPINNER_POPULAR_MOVIES_INDEX = 0;
+    private static final int SPINNER_TOP_RATED_MOVIES_INDEX = 1;
+    private static final int SPINNER_FAVORITE_MOVIES_INDEX = 2;
 
     @Override
     public void openDetail(String movieData) {
@@ -73,10 +92,12 @@ public class  MainActivity extends AppCompatActivity implements
                         sortSpinner.getSelectedItem().toString(),
                         Toast.LENGTH_SHORT);
                 toast.show();
-                if (id == 0){
+                if (id == SPINNER_POPULAR_MOVIES_INDEX){
                     loadMovieData(NetworkUtils.THE_MOVIE_DB_POPULAR_MOVIES_URL);
-                } else if (id == 1){
+                } else if (id == SPINNER_TOP_RATED_MOVIES_INDEX){
                     loadMovieData(NetworkUtils.THE_MOVIE_DB_TOP_RATED_MOVIES_URL);
+                } else if (id == SPINNER_FAVORITE_MOVIES_INDEX) {
+                    loadFavoriteMoviesData();
                 }
             }
 
@@ -116,11 +137,87 @@ public class  MainActivity extends AppCompatActivity implements
         int itemId = item.getItemId();
 
         if (itemId == R.id.action_refresh) {
-            loadMovieData(NetworkUtils.THE_MOVIE_DB_POPULAR_MOVIES_URL);
+            int selectedItem = sortSpinner.getSelectedItemPosition();
+            switch (selectedItem){
+                case SPINNER_POPULAR_MOVIES_INDEX:
+                    loadMovieData(NetworkUtils.THE_MOVIE_DB_POPULAR_MOVIES_URL);
+                    break;
+                case SPINNER_TOP_RATED_MOVIES_INDEX:
+                    loadMovieData(NetworkUtils.THE_MOVIE_DB_TOP_RATED_MOVIES_URL);
+                    break;
+                case SPINNER_FAVORITE_MOVIES_INDEX:
+                    loadFavoriteMoviesData();
+                    break;
+                default:
+                    throw new RuntimeException("Cannot perform action :(");
+            }
+
         }
 
         return super.onOptionsItemSelected(item);
     }
+
+    private void loadFavoriteMoviesData(){
+        favoritesLoader = new LoaderManager.LoaderCallbacks<String[]>() {
+            @Override
+            public Loader<String[]> onCreateLoader(int id, Bundle args) {
+                return new AsyncTaskLoader<String[]>(getBaseContext()) {
+                    @Override
+                    protected void onStartLoading() {
+                        progressBar.setVisibility(View.VISIBLE);
+                        forceLoad();
+                    }
+
+                    @Override
+                    public String[] loadInBackground() {
+                        ArrayList<String> favoriteMovies = new ArrayList<>();
+                        Cursor cursor = getContentResolver().query(
+                                PopularMoviesContract.PopularMoviesEntry.CONTENT_URI,
+                                MOVIE_DETAIL_PROJECTION,
+                                null,
+                                null,
+                                null
+                        );
+
+                        if (cursor != null){
+                            while (cursor.moveToNext()){
+                                try {
+                                    favoriteMovies.add(NetworkUtils.getResponseFromHttpUrl(getMovieDetailsURL(cursor.getString(FAV_MOVIE_ID))));
+                                } catch (IOException e) {
+                                    e.printStackTrace();
+                                }
+                            }
+                            cursor.close();
+
+                        } else {
+                            // no favorites
+                            return null;
+                        }
+
+                        return favoriteMovies.toArray(new String[favoriteMovies.size()]);
+                    }
+                };
+            }
+
+            @Override
+            public void onLoadFinished(Loader<String[]> loader, String[] data) {
+                progressBar.setVisibility(View.GONE);
+                if (data != null){
+                    showMoviesData();
+                    movieListAdapter.setMoviesData(data);
+                } else {
+                    showErrorMessage();
+                }
+            }
+
+            @Override
+            public void onLoaderReset(Loader<String[]> loader) {
+
+            }
+        };
+        getSupportLoaderManager().restartLoader(FAV_MOVIES_LOADER, null, favoritesLoader);
+    }
+
 
     private void loadMovieData(String sortingUrl){
         if (NetworkUtils.hazInternet(this)) {
@@ -203,6 +300,4 @@ public class  MainActivity extends AppCompatActivity implements
     public void onLoaderReset(Loader<String[]> loader) {
         // nothing to do
     }
-
-
 }
