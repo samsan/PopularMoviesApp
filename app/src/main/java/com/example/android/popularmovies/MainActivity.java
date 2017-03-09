@@ -2,6 +2,7 @@ package com.example.android.popularmovies;
 
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.os.Bundle;
 import android.support.v4.app.LoaderManager;
@@ -21,7 +22,6 @@ import android.widget.ArrayAdapter;
 import android.widget.ProgressBar;
 import android.widget.Spinner;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.example.android.popularmovies.adapters.MovieListAdapter;
 import com.example.android.popularmovies.data.PopularMoviesContract;
@@ -58,10 +58,14 @@ public class  MainActivity extends AppCompatActivity implements
 
     private static final int FAV_MOVIE_ID = 0;
 
-    private static final String SPINNER_SELECTED_ITEM_INDEX = "spinner_selected_item_index";
     private static final int SPINNER_POPULAR_MOVIES_INDEX = 0;
     private static final int SPINNER_TOP_RATED_MOVIES_INDEX = 1;
     private static final int SPINNER_FAVORITE_MOVIES_INDEX = 2;
+
+    private static final String POPULAR_MOVIES_SHARED_PREFERENCES = "preferences";
+    private static final String SPINNER_SELECTION_PREFERENCE = "spinner selection";
+
+
 
     @Override
     public void openDetail(String movieData) {
@@ -95,6 +99,11 @@ public class  MainActivity extends AppCompatActivity implements
                 } else if (id == SPINNER_FAVORITE_MOVIES_INDEX) {
                     loadFavoriteMoviesData();
                 }
+                SharedPreferences.Editor editor = getSharedPreferences(
+                        POPULAR_MOVIES_SHARED_PREFERENCES,
+                        MODE_PRIVATE).edit();
+                editor.putLong(SPINNER_SELECTION_PREFERENCE, id);
+                editor.apply();
             }
 
             @Override
@@ -112,6 +121,10 @@ public class  MainActivity extends AppCompatActivity implements
         recycleMovieList.setAdapter(movieListAdapter);
 
         // loadMovieData(NetworkUtils.THE_MOVIE_DB_POPULAR_MOVIES_URL);
+
+        SharedPreferences sharedPreferences = getSharedPreferences(POPULAR_MOVIES_SHARED_PREFERENCES, MODE_PRIVATE);
+        long mSpinnerSelection = sharedPreferences.getLong(SPINNER_SELECTION_PREFERENCE, 0);
+        sortSpinner.setSelection((int) mSpinnerSelection);
     }
 
     public static int calculateNoOfColumns(Context context){
