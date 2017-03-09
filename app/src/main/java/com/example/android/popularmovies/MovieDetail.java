@@ -107,21 +107,23 @@ public class MovieDetail extends AppCompatActivity{
             @Override
             public void onLoadFinished(Loader<String[]> loader, String[] data) {
                 try {
-                    movieTrailers = TheMovieDbJsonUtils.getJsonArrayData(data[0], "results");
-                    movieReviews = TheMovieDbJsonUtils.getJsonArrayData(data[1], "results");
+                    movieTrailers = data[0];
+                    movieReviews = data[1];
+
+                    if (TheMovieDbJsonUtils.isJsonArrayEmpty(movieTrailers, "results")){
+                        showMovieTrailers.setVisibility(View.VISIBLE);
+                    } else {
+                        showMovieTrailers.setVisibility(View.INVISIBLE);
+                    }
+
+                    if (TheMovieDbJsonUtils.isJsonArrayEmpty(movieReviews, "results")){
+                        showReviewsButton.setVisibility(View.VISIBLE);
+                    } else {
+                        showReviewsButton.setVisibility(View.INVISIBLE);
+                    }
+
                 } catch (JSONException e) {
                     e.printStackTrace();
-                }
-
-                if (movieTrailers != null){
-                    showMovieTrailers.setVisibility(View.VISIBLE);
-                } else {
-                    showMovieTrailers.setVisibility(View.INVISIBLE);
-                }
-                if (movieReviews != null){
-                    showReviewsButton.setVisibility(View.VISIBLE);
-                } else {
-                    showReviewsButton.setVisibility(View.INVISIBLE);
                 }
             }
 

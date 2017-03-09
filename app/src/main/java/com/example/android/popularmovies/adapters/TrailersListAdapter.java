@@ -68,12 +68,10 @@ public class TrailersListAdapter extends ArrayAdapter<String> {
                 @Override
                 public void onClick(View v) {
                     Intent intent = new Intent(Intent.ACTION_SEND);
+                    intent.putExtra(Intent.EXTRA_TEXT, trailerYtUri.toString());
                     intent.setType("text/plain");
-                    intent.putExtra(Intent.EXTRA_TEXT, trailerYtUri);
                     if (intent.resolveActivity(getContext().getPackageManager()) != null){
-                        getContext().startActivity(Intent.createChooser(intent,
-                                getContext().getResources().getString(
-                                        R.string.choose_app)));
+                        getContext().startActivity(intent);
                     }
                 }
             });

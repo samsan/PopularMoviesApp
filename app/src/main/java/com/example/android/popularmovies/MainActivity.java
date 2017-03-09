@@ -88,11 +88,6 @@ public class  MainActivity extends AppCompatActivity implements
         sortSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                Toast toast = Toast.makeText(
-                        MainActivity.this,
-                        sortSpinner.getSelectedItem().toString(),
-                        Toast.LENGTH_SHORT);
-                toast.show();
                 if (id == SPINNER_POPULAR_MOVIES_INDEX){
                     loadMovieData(NetworkUtils.THE_MOVIE_DB_POPULAR_MOVIES_URL);
                 } else if (id == SPINNER_TOP_RATED_MOVIES_INDEX){
@@ -104,7 +99,7 @@ public class  MainActivity extends AppCompatActivity implements
 
             @Override
             public void onNothingSelected(AdapterView<?> parent) {
-
+                // do nothing
             }
         });
         recycleMovieList = (RecyclerView) findViewById(R.id.recycle_movie_list);

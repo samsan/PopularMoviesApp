@@ -86,4 +86,16 @@ public class TheMovieDbJsonUtils {
         return null;
     }
 
+    public static boolean isJsonArrayEmpty (String data, String field) throws JSONException {
+        JSONObject jsonObject = new JSONObject(data);
+        if (jsonObject.has(field)) {
+            JSONArray jsonArray = jsonObject.getJSONArray(field);
+            if (jsonArray.length() > 0){
+                return true;
+            }
+            return false;
+        }
+        return false;
+    }
+
 }
