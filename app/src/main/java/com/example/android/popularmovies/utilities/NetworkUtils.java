@@ -85,6 +85,7 @@ public class NetworkUtils {
     public static String getResponseFromHttpUrl(String queryURL) throws IOException {
         URL url = BuildUrl(queryURL);
         HttpURLConnection httpURLConnection = (HttpURLConnection) url.openConnection();
+        httpURLConnection.setConnectTimeout(5000);
         InputStream inputStream = httpURLConnection.getInputStream();
         Scanner scanner = new Scanner(inputStream);
         scanner.useDelimiter("\\A");

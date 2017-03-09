@@ -1,5 +1,6 @@
 package com.example.android.popularmovies;
 
+import android.content.AsyncQueryHandler;
 import android.content.ContentValues;
 import android.content.Intent;
 import android.database.Cursor;
@@ -56,6 +57,7 @@ public class MovieDetail extends AppCompatActivity{
 
     private LoaderManager.LoaderCallbacks<Cursor> favoritesLoader;
 
+    private static AsyncQueryHandler asyncQueryHandler;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -291,17 +293,25 @@ public class MovieDetail extends AppCompatActivity{
     }
 
     public void actionFavorite(View view) {
+        asyncQueryHandler = new AsyncQueryHandler(this.getContentResolver()) {};
         if (isMovieFavorite){
-            getContentResolver().delete(
+            asyncQueryHandler.startDelete(
+                    -1,
+                    null,
                     Uri.withAppendedPath(PopularMoviesContract.PopularMoviesEntry.CONTENT_URI, movieId),
-                    null, null);
-            favIconChangeToUnfavorite();
+                    null,
+                    null);
             Toast.makeText(this, "deleted from favorites", Toast.LENGTH_SHORT).show();
         } else {
             ContentValues contentValues = new ContentValues();
             contentValues.put(MoviesContract.MovieEntry.COLUMN_MOVIE_ID, movieId);
             contentValues.put(MoviesContract.MovieEntry.COLUMN_MOVIE_TITLE, movieTitle);
-            getContentResolver().insert(PopularMoviesContract.PopularMoviesEntry.CONTENT_URI, contentValues);
+            asyncQueryHandler.startInsert(
+                    -1,
+                    null,
+                    PopularMoviesContract.PopularMoviesEntry.CONTENT_URI,
+                    contentValues
+            );
             favIconChangeToFavorite();
             Toast.makeText(this, "added to favorites", Toast.LENGTH_SHORT).show();
         }

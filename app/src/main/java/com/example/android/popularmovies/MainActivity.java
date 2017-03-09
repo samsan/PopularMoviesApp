@@ -229,11 +229,10 @@ public class  MainActivity extends AppCompatActivity implements
 
 
     private void loadMovieData(String sortingUrl){
-        if (NetworkUtils.hazInternet(this)) {
-            Bundle bundle = new Bundle();
-            bundle.putString(MOVIES_URL_QUERY, sortingUrl);
-            getSupportLoaderManager().restartLoader(MOVIES_LOADER, bundle, this);
-        } else {
+        Bundle bundle = new Bundle();
+        bundle.putString(MOVIES_URL_QUERY, sortingUrl);
+        getSupportLoaderManager().restartLoader(MOVIES_LOADER, bundle, this);
+        if (!NetworkUtils.hazInternet(this)) {
             Log.i(LOG_TAG, "no connection!");
             showErrorMessage();
         }
